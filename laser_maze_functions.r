@@ -74,7 +74,8 @@ check_maze <- function(maze_table) {
 				      function(x) {
 					      paste(maze_objects[x, ][, ..coords], collapse = " ")
 				      })
-	stopifnot(maze_size$row < 1000,
+	stopifnot(is.numeric(maze_size$row * maze_size$col),
+		  maze_size$row < 1000,
 		  maze_size$col < 1000,
 		  maze_start$row < maze_size$row,
 		  maze_start$col < maze_size$col,
