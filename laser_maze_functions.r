@@ -57,6 +57,38 @@ generate_maze <- function(x_max = sample(c(1:1000), size = 1),
 	return(maze_table)
 }
 
+check_maze <- function(maze_table) {
+	maze_min <- get_min(maze_table)
+	maze_size <- get_size(maze_table)
+	maze_start <- get_start(maze_table)
+	maze_mirrors <- get_mirrors(maze_table)
+	if(nrow(maze_mirrors) == 0) {
+		maze_mirrors <- data.table(row = 0,
+					   col = 0,
+					   object = NA)
+		"No mirrors detected. Dummy coords inserted"
+	}
+	coords <- c("row", "col")
+	maze_objects <- rbind(maze_start, maze_mirrors)
+	maze_object_coords <- sapply(1:nrow(maze_objects),
+				      function(x) {
+					      paste(maze_objects[x, ][, ..coords], collapse = " ")
+				      })
+	stopifnot(maze_size$row < 1000,
+		  maze_size$col < 1000,
+		  maze_start$row < maze_size$row,
+		  maze_start$col < maze_size$col,
+		  maze_start$row > maze_min$row,
+		  maze_start$col > maze_min$col,
+		  max(maze_mirrors$row) < maze_size$row,
+		  max(maze_mirrors$col) < maze_size$col,
+		  min(maze_mirrors$row) > maze_min$row,
+		  min(maze_mirrors$col) > maze_min$col,
+		  sum(duplicated(maze_object_coords)) == 0,
+		  nrow(maze_start) == 1)
+	print("Maze validated.")
+}
+
 read_maze <- function(file) {
 	maze_table <- fread(file,
 			    sep = " ",
@@ -71,6 +103,7 @@ read_maze <- function(file) {
 			       object = "min")
 	maze_table <- rbind(maze_min,
 			    maze_table)
+	check_maze(maze_table)
 	return(maze_table)
 }
 
@@ -81,6 +114,7 @@ write_maze <- function(maze_table,
 	write.table(maze_table,
 		    file = maze_file,
 		    row.names = FALSE,
+		    col.names = FALSE,
 		    quote = FALSE)
 }
 
@@ -106,45 +140,17 @@ get_mirrors <- function(maze_table) {
 	return(maze_mirrors)
 }
 
-check_maze <- function(maze_table) {
-	maze_min <- get_min(maze_table)
-	maze_size <- get_size(maze_table)
-	maze_start <- get_start(maze_table)
-	maze_mirrors <- get_mirrors(maze_table)
-	coords <- c("row", "col")
-	maze_start_coords <- paste(maze_start[, ..coords], collapse = " ")
-	maze_mirrors_coords <- sapply(1:nrow(maze_mirrors),
-				      function(x) {
-					      paste(maze_mirrors[x, ][, ..coords], collapse = " ")
-				      })
-	if(nrow(maze_mirrors) == 0) {
-		maze_mirrors <- data.table(row = 0,
-					   col = 0,
-					   object = NA)
-		maze_mirrors_coords <- ""
-	}
-	maze_object_coords <- c(maze_start_coords, maze_mirrors_coords)
-	stopifnot(maze_size$row < 1000,
-		  maze_size$col < 1000,
-		  maze_start$row < maze_size$row,
-		  maze_start$col < maze_size$col,
-		  maze_start$row > maze_min$row,
-		  maze_start$col > maze_min$col,
-		  max(maze_mirrors$row) < maze_size$row,
-		  max(maze_mirrors$col) < maze_size$col,
-		  min(maze_mirrors$row) > maze_min$row,
-		  min(maze_mirrors$col) > maze_min$col,
-		  sum(duplicated(maze_object_coords)) == 0)
-	print("Maze validated.")
-}
-
 # MOVEMENT ==========================================================
 
 create_player <- function(maze_table) {
 	position <- get_start(maze_table)
-	beams = 0
+	beams <- 0
+	history <- data.table(row = NA,
+			      col = NA,
+			      object = NA)
 	player <- list(position = position,
-		       beams = beams)
+		       beams = beams,
+		       history = history)
 	return(player)
 }
 
@@ -186,6 +192,7 @@ fire_beam <- function(player,
 		      maze_table,
 		      output_file) {
 	beams <- player$beams + 1
+	history <- player$history
 	position <- player$position
 	direction <- position$object
 	col_objects <- get_col_objects(position, maze_table)
@@ -231,9 +238,23 @@ fire_beam <- function(player,
 		nearest_object$object <- change_direction(direction = direction,
 				  			  mirror_type = nearest_object$object)
 	}
+	history <- rbind(history, nearest_object)
 	new_player <- list(position = nearest_object,
-			   beams = beams)
+			   beams = beams,
+			   history = history)
 	return(new_player)
+}
+
+check_history <- function(player,
+			  output_file) {
+	history <- player$history
+	if(anyDuplicated(history) != 0) {
+		print("Coordinates repeated. Mirror-loop implied")
+		print(paste0("Results written to ", output_file))
+		write(-1, file = output_file)
+		write(-1, "")
+		quit(save = "no")
+       	}
 }
 
 recursion_reached <- function(output_file) {
