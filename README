@@ -1,0 +1,40 @@
+======================================================================
+laser_maze.R
+
+2018-08-11 Justin J Lin
+
+23 and Me Coding Challenge
+
+======================================================================
+usage: 
+
+laser_maze.R <input_file> <output_file> [--generate <X> <Y> <N>]
+
+--generate :	Create a maze of <X> by <Y> squares, with <N> mirrors.
+		If no parameters are specified, then a maze of up to 
+		1000 x 1000 squares will be generated at random, with
+		up to 1000 mirrors.
+
+======================================================================
+dependencies:
+
+library(data.table)
+source("laser_maze_functions.r")
+
+======================================================================
+testing resources:
+
+mazes/
+├── incorrectly_formatted_mazes				
+│   ├── duplicate_mirrors_maze_file.txt
+│   ├── multiple_starting_position_maze_file.txt
+│   ├── object_collision_maze_file.txt
+│   └── wall_start_maze_file.txt
+├── infinite_maze_file.txt
+├── sample_generated_maze.txt
+│
+└── sample_maze_file.txt . . . . . . . . . . . ### From the prompt ###
+
+Testing was perfomed using the above files, as well as several
+randomly generated mazes, using the generate_maze() function in
+"./laser_maze_functions.r".
