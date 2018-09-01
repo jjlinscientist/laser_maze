@@ -13,12 +13,12 @@ output_file <- args[2]
 
 # Generate maze if necessary =====================================================================
 
-if(length(args) < 2 | length(args) > 6) {
+if (length(args) < 2 | length(args) > 6) {
 	stop(usage_instructions)
 }
 
-if(sum(grepl("--generate", args)) == 1) {
-	if(grep("--generate", args) == length(args)) {
+if (sum(grepl("--generate", args)) == 1) {
+	if (grep("--generate", args) == length(args)) {
 		maze_table <- generate_maze()
 	} else {
 		x_max <- as.numeric(args[grep("--generate", args) + 1])
@@ -36,8 +36,8 @@ if(sum(grepl("--generate", args)) == 1) {
 
 player <- create_player(maze_table)
 
-if(nrow(get_mirrors(maze_table)) > 0) {
-	while(1 > 0) {
+if (nrow(get_mirrors(maze_table)) > 0) {
+	repeat {
 		check_history(player,
 			      output_file)
 		player <- fire_beam(player,

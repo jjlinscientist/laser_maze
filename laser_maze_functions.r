@@ -6,13 +6,13 @@ generate_maze <- function(x_max = sample(c(1:1000), size = 1),
 			  y_max = sample(c(1:1000), size = 1),
 			  mirrors = sample(c(0:1000), size = 1)) {
 	squared <- x_max * y_max
-	if(squared == 0) {
+	if (squared == 0) {
 		print("Too few tiles. Creating maze with at least 1 tile.")
 		x_max <- 1
 		y_max <- 1
 		squared <- x_max * y_max
 	}
-	if(mirrors >= squared) {
+	if (mirrors >= squared) {
 		print("Too many mirrors. Reducing to number of tiles - 1.")
 		mirrors <- squared - 1
 	}
@@ -26,7 +26,7 @@ generate_maze <- function(x_max = sample(c(1:1000), size = 1),
 	maze_min <- data.table(row = -1,
 			       col = -1,
 			       object = "min")
-	if(mirrors > 0) {
+	if (mirrors > 0) {
 		mirror_index <- sample(maze_coords, size = mirrors, replace = FALSE)
 		mirror_coord_list <- lapply(mirror_index,
     					    function(index) {
@@ -45,7 +45,7 @@ generate_maze <- function(x_max = sample(c(1:1000), size = 1),
 		start_coord <- as.data.table(which(maze_coords == start_index, arr.ind = TRUE)) - 1
 		start_coord$object <- start_direction
 	}
-	if(squared == 1) {
+	if (squared == 1) {
 		start_coord <- data.table(row = 0,
  					  col = 0,
  					  object = start_direction)
@@ -62,7 +62,7 @@ check_maze <- function(maze_table) {
 	maze_size <- get_size(maze_table)
 	maze_start <- get_start(maze_table)
 	maze_mirrors <- get_mirrors(maze_table)
-	if(nrow(maze_mirrors) == 0) {
+	if (nrow(maze_mirrors) == 0) {
 		maze_mirrors <- data.table(row = 0,
 					   col = 0,
 					   object = NA)
@@ -198,25 +198,25 @@ fire_beam <- function(player,
 	direction <- position$object
 	col_objects <- get_col_objects(position, maze_table)
 	row_objects <- get_row_objects(position, maze_table)
-	if(direction == "N") {
+	if (direction == "N") {
 		col_objects <- col_objects[col_objects$col > position$col]
 		nearest_object <- col_objects[which.min(col_objects$col)]
 		wall_position <- position
 		wall_position$col <- nearest_object$col - 1
 	} else 
-	if(direction == "S") {
+	if (direction == "S") {
 		col_objects <- col_objects[col_objects$col < position$col]
 		nearest_object <- col_objects[which.max(col_objects$col)]
 		wall_position <- position
 		wall_position$col <- nearest_object$col + 1
 	} else
-	if(direction == "E") {
+	if (direction == "E") {
 		row_objects <- row_objects[row_objects$row > position$row]
 		nearest_object <- row_objects[which.min(row_objects$row)]
 		wall_position <- position
 		wall_position$row <- nearest_object$row - 1
 	} else
-	if(direction == "W") {
+	if (direction == "W") {
 		row_objects <- row_objects[row_objects$row < position$row]
 		nearest_object <- row_objects[which.max(row_objects$row)]
 		wall_position <- position
@@ -225,7 +225,7 @@ fire_beam <- function(player,
 	maze_min <- get_min(maze_table)
 	maze_size <- get_size(maze_table)
 	boundaries <- c(maze_min$object, maze_size$object)
-	if(nearest_object$object %in% boundaries) {
+	if (nearest_object$object %in% boundaries) {
 		wall_position$object <- "wall"
 		coords <- c("row", "col")
 		write_data <- c(beams,
@@ -249,7 +249,7 @@ fire_beam <- function(player,
 check_history <- function(player,
 			  output_file) {
 	history <- player$history
-	if(anyDuplicated(history) != 0) {
+	if (anyDuplicated(history) != 0) {
 		print("Coordinates repeated. Mirror-loop implied")
 		print(paste0("Results written to ", output_file))
 		write(-1, file = output_file)
